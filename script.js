@@ -9,13 +9,17 @@
 
 const navbar = document.getElementById("navbar");
 
-window.addEventListener("scroll", () => {
-  if (window.scrollY > 40) {
-    navbar.classList.add("scrolled");
-  } else {
-    navbar.classList.remove("scrolled");
-  }
-});
+if (navbar) {
+  window.addEventListener("scroll", () => {
+
+    if (window.scrollY > 40) {
+      navbar.classList.add("scrolled");
+    } else {
+      navbar.classList.remove("scrolled");
+    }
+
+  });
+}
 
 
 // ======================================
@@ -32,9 +36,11 @@ if (menuToggle && navLinks) {
   });
 
   document.querySelectorAll(".nav-links a").forEach((link) => {
+
     link.addEventListener("click", () => {
       navLinks.classList.remove("active");
     });
+
   });
 
 }
@@ -78,30 +84,41 @@ document.querySelectorAll('a[href^="#"]').forEach((link) => {
 
 const revealElements = document.querySelectorAll(".reveal");
 
-const revealObserver = new IntersectionObserver(
-  (entries) => {
+if ("IntersectionObserver" in window) {
 
-    entries.forEach((entry) => {
+  const revealObserver = new IntersectionObserver(
+    (entries) => {
 
-      if (entry.isIntersecting) {
+      entries.forEach((entry) => {
 
-        entry.target.classList.add("visible");
+        if (entry.isIntersecting) {
 
-        revealObserver.unobserve(entry.target);
+          entry.target.classList.add("visible");
 
-      }
+          revealObserver.unobserve(entry.target);
 
-    });
+        }
 
-  },
-  {
-    threshold: 0.12
-  }
-);
+      });
 
-revealElements.forEach((element) => {
-  revealObserver.observe(element);
-});
+    },
+    {
+      threshold: 0.12
+    }
+  );
+
+  revealElements.forEach((element) => {
+    revealObserver.observe(element);
+  });
+
+} else {
+
+  // Fallback for older browsers
+  revealElements.forEach((element) => {
+    element.classList.add("visible");
+  });
+
+}
 
 
 // ======================================
@@ -121,32 +138,46 @@ if (contactForm) {
       contactForm.querySelector(".submit-button");
 
 
-    // -------------------------------
+    // ==================================
+    // CHECK FORM ELEMENTS
+    // ==================================
+
+    if (!formMessage || !submitButton) {
+
+      console.error(
+        "Form message or submit button not found."
+      );
+
+      return;
+    }
+
+
+    // ==================================
     // GET FORM VALUES
-    // -------------------------------
+    // ==================================
 
     const name =
-      document.getElementById("name").value.trim();
+      document.getElementById("name")?.value.trim();
 
     const email =
-      document.getElementById("email").value.trim();
+      document.getElementById("email")?.value.trim();
 
     const phone =
-      document.getElementById("phone").value.trim();
+      document.getElementById("phone")?.value.trim();
 
     const interest =
-      document.getElementById("interest").value;
+      document.getElementById("interest")?.value;
 
     const location =
-      document.getElementById("locationInput").value.trim();
+      document.getElementById("locationInput")?.value.trim();
 
     const message =
-      document.getElementById("message").value.trim();
+      document.getElementById("message")?.value.trim();
 
 
-    // -------------------------------
+    // ==================================
     // REQUIRED FIELD CHECK
-    // -------------------------------
+    // ==================================
 
     if (
       !name ||
@@ -160,15 +191,16 @@ if (contactForm) {
       formMessage.textContent =
         "Please complete all required fields.";
 
-      formMessage.style.color = "#d8a0a0";
+      formMessage.style.color =
+        "#d8a0a0";
 
       return;
     }
 
 
-    // -------------------------------
+    // ==================================
     // EMAIL VALIDATION
-    // -------------------------------
+    // ==================================
 
     const emailPattern =
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -178,31 +210,40 @@ if (contactForm) {
       formMessage.textContent =
         "Please enter a valid email address.";
 
-      formMessage.style.color = "#d8a0a0";
+      formMessage.style.color =
+        "#d8a0a0";
 
       return;
     }
 
 
-    // -------------------------------
+    // ==================================
     // SHOW SENDING
-    // -------------------------------
+    // ==================================
 
     submitButton.disabled = true;
 
     submitButton.innerHTML =
       "SENDING...";
 
-    formMessage.textContent = "";
+    formMessage.textContent =
+      "Sending your request...";
+
+    formMessage.style.color =
+      "#c8a96b";
 
 
-    // -------------------------------
-    // SEND TO FORMSPREE
-    // -------------------------------
+    // ==================================
+    // CREATE FORM DATA
+    // ==================================
 
     const formData =
       new FormData(contactForm);
 
+
+    // ==================================
+    // SEND TO FORMSPREE
+    // ==================================
 
     try {
 
@@ -218,9 +259,39 @@ if (contactForm) {
       );
 
 
-      // -------------------------------
+      // ==================================
+      // READ FORMSPREE RESPONSE
+      // ==================================
+
+      let data = {};
+
+      try {
+
+        data = await response.json();
+
+      } catch (jsonError) {
+
+        console.log(
+          "Formspree did not return JSON."
+        );
+
+      }
+
+
+      console.log(
+        "Formspree status:",
+        response.status
+      );
+
+      console.log(
+        "Formspree response:",
+        data
+      );
+
+
+      // ==================================
       // SUCCESS
-      // -------------------------------
+      // ==================================
 
       if (response.ok) {
 
@@ -230,56 +301,98 @@ if (contactForm) {
         formMessage.style.color =
           "#c8a96b";
 
-
         contactForm.reset();
-
-
-        submitButton.disabled = false;
-
-        submitButton.innerHTML =
-          'Submit Request <span>→</span>';
 
       }
 
 
-      // -------------------------------
-      // ERROR FROM FORMSPREE
-      // -------------------------------
+      // ==================================
+      // FORMSPREE ERROR
+      // ==================================
 
       else {
 
-        const data = await response.json();
+        let errorText =
+          "Form submission failed.";
 
-        throw new Error(
-          data.error || "Submission failed."
+        if (
+          data &&
+          data.errors &&
+          Array.isArray(data.errors) &&
+          data.errors.length > 0
+        ) {
+
+          errorText =
+            data.errors
+              .map((error) => error.message)
+              .join(" ");
+
+        }
+
+        else if (
+          data &&
+          data.error
+        ) {
+
+          errorText =
+            data.error;
+
+        }
+
+        else if (
+          data &&
+          data.message
+        ) {
+
+          errorText =
+            data.message;
+
+        }
+
+        formMessage.textContent =
+          errorText;
+
+        formMessage.style.color =
+          "#d8a0a0";
+
+        console.error(
+          "Formspree submission failed:",
+          data
         );
 
       }
 
-
     }
 
-    // -------------------------------
+
+    // ==================================
     // CONNECTION ERROR
-    // -------------------------------
+    // ==================================
 
     catch (error) {
 
-      console.error(error);
+      console.error(
+        "Formspree connection error:",
+        error
+      );
 
       formMessage.textContent =
-        "Something went wrong. Please try again.";
+        "Unable to connect to the form service. Please check your internet connection and try again.";
 
       formMessage.style.color =
         "#d8a0a0";
 
-
-      submitButton.disabled = false;
-
-      submitButton.innerHTML =
-        'Submit Request <span>→</span>';
-
     }
+
+
+    // ==================================
+    // RESTORE BUTTON
+    // ==================================
+
+    submitButton.disabled = false;
+
+    submitButton.innerHTML =
+      'Submit Request <span>→</span>';
 
   });
 
