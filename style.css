@@ -849,3 +849,145 @@ footer {
     transform: none;
   }
 }
+
+
+/* =========================
+   RESPONSIVE DEVICE POLISH
+========================= */
+
+/* Prevent anchor links from hiding content behind fixed navbar */
+section {
+  scroll-margin-top: 90px;
+}
+
+/* Keep mobile form controls comfortable on phones */
+@media (max-width: 600px) {
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    font-size: 16px;
+  }
+
+  .hero-content {
+    padding-top: 30px;
+  }
+
+  .section {
+    width: 100%;
+    overflow: hidden;
+  }
+
+}
+
+/* Samsung / Android / small phones */
+@media (max-width: 380px) {
+
+  .navbar {
+    padding: 0 4%;
+  }
+
+  .brand {
+    gap: 9px;
+  }
+
+  .brand-name {
+    font-size: 8px;
+    letter-spacing: 1.5px;
+  }
+
+  .brand-logo {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .hero-content {
+    width: 92%;
+    margin-left: 5%;
+  }
+
+  .hero-logo {
+    font-size: 32px;
+    margin-bottom: 16px;
+  }
+
+  .eyebrow {
+    font-size: 9px;
+    letter-spacing: 3px;
+  }
+
+  .hero h1 {
+    font-size: clamp(48px, 16vw, 68px);
+  }
+
+  .hero-description {
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .gold-button {
+    padding: 14px 20px;
+  }
+
+  .section-heading h2,
+  .about-content h2,
+  .location-content h2,
+  .contact-intro h2 {
+    font-size: 44px;
+  }
+
+  .stat strong {
+    font-size: 42px;
+  }
+
+  .stat span {
+    font-size: 7px;
+    letter-spacing: 1.5px;
+  }
+
+  .service-card {
+    padding: 25px;
+  }
+
+  .service-card h3 {
+    font-size: 31px;
+  }
+
+}
+
+
+/* Android / Samsung tablets */
+@media (min-width: 601px) and (max-width: 900px) {
+
+  .section {
+    padding-left: 6%;
+    padding-right: 6%;
+  }
+
+  .about-section,
+  .location-section,
+  .contact-section {
+    gap: 50px;
+  }
+
+  .service-card {
+    padding: 35px;
+  }
+
+}
+
+
+/* Laptop screens */
+@media (min-width: 1200px) {
+
+  .section {
+    padding-left: 8%;
+    padding-right: 8%;
+  }
+
+  .hero-content {
+    margin-left: 8%;
+  }
+
+}
