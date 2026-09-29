@@ -1,6 +1,11 @@
-// ================================
+// ======================================
+// JACE REAL ESTATE - WEBSITE JAVASCRIPT
+// ======================================
+
+
+// ======================================
 // NAVIGATION
-// ================================
+// ======================================
 
 const navbar = document.getElementById("navbar");
 
@@ -13,41 +18,81 @@ window.addEventListener("scroll", () => {
 });
 
 
-// ================================
+// ======================================
 // MOBILE MENU
-// ================================
+// ======================================
 
 const menuToggle = document.getElementById("menuToggle");
 const navLinks = document.getElementById("navLinks");
 
-menuToggle.addEventListener("click", () => {
-  navLinks.classList.toggle("active");
-});
+if (menuToggle && navLinks) {
 
-document.querySelectorAll(".nav-links a").forEach(link => {
-  link.addEventListener("click", () => {
-    navLinks.classList.remove("active");
+  menuToggle.addEventListener("click", () => {
+    navLinks.classList.toggle("active");
   });
+
+  document.querySelectorAll(".nav-links a").forEach((link) => {
+    link.addEventListener("click", () => {
+      navLinks.classList.remove("active");
+    });
+  });
+
+}
+
+
+// ======================================
+// SMOOTH SCROLL
+// ======================================
+
+document.querySelectorAll('a[href^="#"]').forEach((link) => {
+
+  link.addEventListener("click", function (event) {
+
+    const targetId = this.getAttribute("href");
+
+    if (!targetId || targetId === "#") {
+      return;
+    }
+
+    const target = document.querySelector(targetId);
+
+    if (target) {
+
+      event.preventDefault();
+
+      target.scrollIntoView({
+        behavior: "smooth",
+        block: "start"
+      });
+
+    }
+
+  });
+
 });
 
 
-// ================================
-// SCROLL REVEAL
-// ================================
+// ======================================
+// SCROLL REVEAL ANIMATIONS
+// ======================================
 
 const revealElements = document.querySelectorAll(".reveal");
 
 const revealObserver = new IntersectionObserver(
   (entries) => {
+
     entries.forEach((entry) => {
 
       if (entry.isIntersecting) {
+
         entry.target.classList.add("visible");
+
         revealObserver.unobserve(entry.target);
 
       }
 
     });
+
   },
   {
     threshold: 0.12
@@ -59,64 +104,183 @@ revealElements.forEach((element) => {
 });
 
 
-// ================================
-// FORM
-// ================================
+// ======================================
+// CONTACT FORM + FORMSPREE
+// ======================================
 
 const contactForm = document.getElementById("contactForm");
 const formMessage = document.getElementById("formMessage");
 
-contactForm.addEventListener("submit", function (event) {
+if (contactForm) {
 
-  event.preventDefault();
+  contactForm.addEventListener("submit", async function (event) {
 
-  const name = document.getElementById("name").value.trim();
-  const email = document.getElementById("email").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const interest = document.getElementById("interest").value;
-  const location = document.getElementById("locationInput").value.trim();
-  const message = document.getElementById("message").value.trim();
+    event.preventDefault();
 
-  if (!name || !email || !phone || !interest || !location || !message) {
-
-    formMessage.textContent =
-      "Please complete all required fields.";
-
-    formMessage.style.color = "#d8a0a0";
-
-    return;
-  }
+    const submitButton =
+      contactForm.querySelector(".submit-button");
 
 
-  // Basic email validation
-  const emailPattern =
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    // -------------------------------
+    // GET FORM VALUES
+    // -------------------------------
 
-  if (!emailPattern.test(email)) {
+    const name =
+      document.getElementById("name").value.trim();
 
-    formMessage.textContent =
-      "Please enter a valid email address.";
+    const email =
+      document.getElementById("email").value.trim();
 
-    formMessage.style.color = "#d8a0a0";
+    const phone =
+      document.getElementById("phone").value.trim();
 
-    return;
-  }
+    const interest =
+      document.getElementById("interest").value;
 
+    const location =
+      document.getElementById("locationInput").value.trim();
 
-  /*
-    EMAIL SERVICE WILL BE CONNECTED HERE.
-
-    GitHub Pages cannot send email directly.
-    We will connect this form to a secure
-    form/email service in the next step.
-  */
+    const message =
+      document.getElementById("message").value.trim();
 
 
-  formMessage.textContent =
-    "Thank you. Your request has been received.";
+    // -------------------------------
+    // REQUIRED FIELD CHECK
+    // -------------------------------
 
-  formMessage.style.color = "#c8a96b";
+    if (
+      !name ||
+      !email ||
+      !phone ||
+      !interest ||
+      !location ||
+      !message
+    ) {
 
-  contactForm.reset();
+      formMessage.textContent =
+        "Please complete all required fields.";
 
-});
+      formMessage.style.color = "#d8a0a0";
+
+      return;
+    }
+
+
+    // -------------------------------
+    // EMAIL VALIDATION
+    // -------------------------------
+
+    const emailPattern =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(email)) {
+
+      formMessage.textContent =
+        "Please enter a valid email address.";
+
+      formMessage.style.color = "#d8a0a0";
+
+      return;
+    }
+
+
+    // -------------------------------
+    // SHOW SENDING
+    // -------------------------------
+
+    submitButton.disabled = true;
+
+    submitButton.innerHTML =
+      "SENDING...";
+
+    formMessage.textContent = "";
+
+
+    // -------------------------------
+    // SEND TO FORMSPREE
+    // -------------------------------
+
+    const formData =
+      new FormData(contactForm);
+
+
+    try {
+
+      const response = await fetch(
+        contactForm.action,
+        {
+          method: "POST",
+          body: formData,
+          headers: {
+            "Accept": "application/json"
+          }
+        }
+      );
+
+
+      // -------------------------------
+      // SUCCESS
+      // -------------------------------
+
+      if (response.ok) {
+
+        formMessage.textContent =
+          "Thank you. Your request has been received. Our team will get back to you shortly.";
+
+        formMessage.style.color =
+          "#c8a96b";
+
+
+        contactForm.reset();
+
+
+        submitButton.disabled = false;
+
+        submitButton.innerHTML =
+          'Submit Request <span>→</span>';
+
+      }
+
+
+      // -------------------------------
+      // ERROR FROM FORMSPREE
+      // -------------------------------
+
+      else {
+
+        const data = await response.json();
+
+        throw new Error(
+          data.error || "Submission failed."
+        );
+
+      }
+
+
+    }
+
+    // -------------------------------
+    // CONNECTION ERROR
+    // -------------------------------
+
+    catch (error) {
+
+      console.error(error);
+
+      formMessage.textContent =
+        "Something went wrong. Please try again.";
+
+      formMessage.style.color =
+        "#d8a0a0";
+
+
+      submitButton.disabled = false;
+
+      submitButton.innerHTML =
+        'Submit Request <span>→</span>';
+
+    }
+
+  });
+
+}
